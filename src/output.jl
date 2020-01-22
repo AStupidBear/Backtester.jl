@@ -96,7 +96,7 @@ function 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大�
     end
     资金曲线 = 添加指数(资金曲线)
     资金曲线.index.name = "日期"
-    资金曲线.reset_index().to_csv("资金曲线.csv", encoding = "gbk", index = false)
+    to_csv(资金曲线.reset_index(), "资金曲线.csv", encoding = "gbk", index = false)
     资金曲线 = 资金曲线["资金曲线"].values
     最大回撤, 最大回撤期 = drawdown(资金曲线)
     夏普率 = sharperatio(资金曲线)
@@ -189,7 +189,7 @@ function 输出仓位评分信号(代码, 时间戳, 实际仓位, 综合评分,
     codes, dates = 代码[:, 1], 时间戳[1, :]
     for (key, x) in pairs(@NT(实际仓位, 综合评分, 虚拟信号))
         df = DataFrame(trunc.(x, digits = 4), columns = dates, index = codes)
-        df.to_hdf("仓位评分信号.h5", key, complib = "lzo", complevel = 9)
+        to_hdf(df, "仓位评分信号.h5", key, complib = "lzo", complevel = 9)
     end
 end
 
@@ -206,7 +206,7 @@ function 输出分钟仓位(代码, 时间戳, 价格, 实际仓位, 收益率)
         df["仓位:$code"] = 实际仓位[n, 切片]
         df["资金曲线:$code"] = 资金曲线[n, 切片]
     end
-    df.to_csv("分钟仓位.csv", index = false, encoding = "gbk")
+    to_csv(df, "分钟仓位.csv", index = false, encoding = "gbk")
 end
 
 combine(dirs) = 合并汇总(dirs)
@@ -246,18 +246,18 @@ end
 function 合并资金和仓位曲线(csvs)
     复利 = get(ENV, "USE_COMP", "0") == "1"
     all(isfile, csvs) || return ""
-    df = pd.read_csv(csvs[1], encoding = "gbk")
+    df = read_csv(csvs[1], encoding = "gbk")
     资金有关列 = filter(collect(df.columns)) do c
         occursin(r"资金曲线|BH|0", c)
     end
     for csv in csvs[2:end]
-        df′ = pd.read_csv(csv, encoding = "gbk")
+        df′ = read_csv(csv, encoding = "gbk")
         for c in 资金有关列
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
         df = df.append(df′, ignore_index = true)
     end
-    df.to_csv("资金和仓位曲线.csv", index = false, encoding = "gbk")
+    to_csv(df, "资金和仓位曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
     倍数, 天数 = 资金曲线[end], length(资金曲线)
     年化收益率 = 复利 ? 倍数^(224f0 / 天数) - 1 : 224f0 * (倍数 - 1f0) / 天数
@@ -270,15 +270,15 @@ end
 function 合并资金曲线(csvs)
     复利 = get(ENV, "USE_COMP", "0") == "1"
     all(isfile, csvs) || return ""
-    df = pd.read_csv(csvs[1], encoding = "gbk")
+    df = read_csv(csvs[1], encoding = "gbk")
     for csv in csvs[2:end]
-        df′ = pd.read_csv(csv, encoding = "gbk")
+        df′ = read_csv(csv, encoding = "gbk")
         for c in df.columns.drop("日期")
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
         df = df.append(df′, ignore_index = true)
     end
-    df.to_csv("资金曲线.csv", index = false, encoding = "gbk")
+    to_csv(df, "资金曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
     倍数, 天数 = 资金曲线[end], length(资金曲线)
     年化收益率 = 复利 ? 倍数^(224f0 / 天数) - 1 : 224f0 * (倍数 - 1f0) / 天数
@@ -332,7 +332,7 @@ function 合并仓位评分信号(h5s)
     all(isfile, h5s) || return
     for key in ["实际仓位", "综合评分", "虚拟信号"]
         df = pd.concat(pd.read_hdf.(h5s, key), axis = 1)
-        df.to_hdf("仓位评分信号.h5", key, complib = "lzo", complevel = 9)
+        to_hdf(df, "仓位评分信号.h5", key, complib = "lzo", complevel = 9)
     end
 end
 
@@ -347,9 +347,9 @@ function 合并交易记录表(csvs)
 end
 
 function 输出盈亏报告()
-    df = pd.read_csv("资金曲线.csv", encoding = "gbk", parse_dates = ["日期"], index_col = "日期")
+    df = read_csv("资金曲线.csv", encoding = "gbk", parse_dates = ["日期"], index_col = "日期")
     df["收益率"] = df["资金曲线"].pct_change()
-    df′ = pd.read_csv("交易记录表.csv", encoding = "gbk", parse_dates = ["开仓时间", "平仓时间"])
+    df′ = read_csv("交易记录表.csv", encoding = "gbk", parse_dates = ["开仓时间", "平仓时间"])
     isempty(df′) && return
     for freq in ["A"]
         srs = map(df.groupby(pd.Grouper(freq = freq))) do (t, dft)
@@ -370,7 +370,7 @@ function 输出盈亏报告()
         dfc = pd.concat(srs, axis = 1)
         dfc = freq == "A" ? dfc : dfc.T
         cn = freq == "A" ? "年" : "月"
-        dfc.to_csv(cn * "盈亏报告.csv", encoding = "gbk")
+        to_csv(dfc, cn * "盈亏报告.csv", encoding = "gbk")
     end
 end
 

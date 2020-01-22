@@ -51,7 +51,7 @@ function fit_thresh!(strtg, data; pattern = "θ")
     df = df.pivot_table(index = "θc", columns = "θo")
     trange = Dates.format.(datespan(data), "yymmdd")
     csv = @sprintf("thresh_%s-%s.csv", trange...)
-    df.to_csv(csv, encoding = "gbk")
+    to_csv(df, csv, encoding = "gbk")
     paramᵒ, pnlᵒ = sort(res, by = last)[end]
     println([string(k, ':', v, ' ') for (k, v) in paramᵒ]...)
     update_param!(strtg, paramᵒ)
