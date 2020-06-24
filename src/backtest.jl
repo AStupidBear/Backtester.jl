@@ -1,7 +1,5 @@
-const 记忆仓位 = zeros(Float32, 100000)
-const 记忆收益率 = Dict{UInt64, Array{Float32}}()
-
 function backtest(strtg, data; mode = "train")
+    记忆仓位 = @staticvar zeros(Float32, 100000)
     F, N, T = size(data.特征)
     T < 1 && return 0f0
     @unpack sim, nhold, thold, overnight, maxtrade, feats2drop = strtg
@@ -108,6 +106,7 @@ function select_stocks(涨停, 跌停, 交易池, 是否为ST, 虚拟信号, 综
 end
 
 function summarize_core(代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 实际仓位, 综合评分, 最大持仓)
+    记忆收益率 = @staticvar Dict{UInt64, Array{Float32}}()
     N, T = size(实际仓位)
     天数 = sortednunique(unix2date, 时间戳[1, :])
     复利 = get(ENV, "USE_COMP", "0") == "1"

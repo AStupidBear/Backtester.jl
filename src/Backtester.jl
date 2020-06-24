@@ -8,8 +8,7 @@ using PyCall, BSON, StandardMarketData, MLSuiteBase
 using Iconv, HDF5Utils, PandasLite, PyCallUtils, BSONMmap
 using StatsBase: corspearman
 
-export Strategy, fit!, fit_code!, fit_roll!, fit_thresh!, backtest
-export update_param!, bash, get_index_price, unsqueeze
+export Strategy, backtest
 export @roll, @indir, @gc
 
 include("util.jl")
