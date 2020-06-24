@@ -1,0 +1,2 @@
+[![Build Status](https://travis-ci.com/AStupidBear/GCMAES.jl.svg?branch=master)](https://travis-ci.com/AStupidBear/GCMAES.jl)
+[![Coverage](https://codecov.io/gh/AStupidBear/GCMAES.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/AStupidBear/GCMAES.jl)
