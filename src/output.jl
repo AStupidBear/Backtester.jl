@@ -218,7 +218,7 @@ function 合并汇总(目录列表)
         m = match(日期模式, basename(目录))
         String.(m.captures)
     end
-    sortall!(日期, 目录列表, by = first)
+    multisort!(日期, 目录列表, by = first)
     ti, tf = minimum(first, 日期), maximum(last, 日期)
     合并目录名 = replace(basename(目录列表[1]), 日期模式 => ti * "-" * tf)
     资金和仓位曲线文件 = @. abspath(目录列表 * "/资金和仓位曲线.csv")
