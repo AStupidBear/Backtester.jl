@@ -2,9 +2,8 @@ function backtest(strat, data; mode = "train")
     记忆仓位 = @staticvar zeros(Float32, 100000)
     F, N, T = size(data.特征)
     T < 1 && return 0f0
-    @unpack sim, nhold, thold, overnight, maxtrade = strat
-    持仓天数, 是否隔夜, 最多交易次数 = thold, overnight, maxtrade
-    最大持仓 = iszero(nhold) ? ncodes(data) : clamp(nhold, 1, ncodes(data))
+    @unpack sim, 最大持仓, 持仓天数, 是否隔夜, 最多交易次数 = strat
+    最大持仓 = iszero(最大持仓) ? ncodes(data) : clamp(最大持仓, 1, ncodes(data))
     虚拟信号, 综合评分 = simulate(sim, data)
     持仓天数′ = size(虚拟信号, 1) ÷ N
     if 持仓天数′ == 1
