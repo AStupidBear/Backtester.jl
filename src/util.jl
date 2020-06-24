@@ -310,13 +310,13 @@ macro indir(dir, ex)
     end |> esc
 end
 
-function multisort(xs::AbstractArray...; kw...)
-    p = sortperm(first(xs); kw...)
+function multisort(xs::AbstractArray...; ka...)
+    p = sortperm(first(xs); ka...)
     map(x -> x[p], xs)
 end
 
-function multisort!(xs::AbstractArray...; kw...)
-    p = sortperm(first(xs); kw...)
+function multisort!(xs::AbstractArray...; ka...)
+    p = sortperm(first(xs); ka...)
     for x in xs
         permute!(x, p)
     end

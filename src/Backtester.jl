@@ -15,6 +15,5 @@ include("util.jl")
 include("strategy.jl")
 include("backtest.jl")
 include("output.jl")
-include("simulator.jl")
 
 end
