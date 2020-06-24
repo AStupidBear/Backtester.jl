@@ -10,7 +10,7 @@ using StatsBase: corspearman
 
 export Strategy, fit!, fit_code!, fit_roll!, fit_thresh!, backtest
 export update_param!, bash, get_index_price, unsqueeze
-export @roll, @indir, @staticvar, @staticdef, @gc
+export @roll, @indir, @gc
 
 include("util.jl")
 include("strategy.jl")
