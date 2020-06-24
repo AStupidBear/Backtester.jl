@@ -9,37 +9,37 @@
     feats2drop::Vector = []
 end
 
-function fit!(strtg::Strategy, data; ka...)
-    @unpack sim, feats2drop = strtg
+function fit!(strat::Strategy, data; ka...)
+    @unpack sim, feats2drop = strat
     data = dropfeats(data, feats2drop)
     fit!(sim, data; ka...)
-    fit_thresh!(strtg, data; ka...)
-    BSON.@save "strategy.bson" strtg
-    backtest(strtg, data, mode = "test")
+    fit_thresh!(strat, data; ka...)
+    BSON.@save "strategy.bson" strat
+    backtest(strat, data, mode = "test")
 end
 
-function fit_code!(ffit, strtg, data)
+function fit_code!(ffit, strat, data)
     for code in codesof(data)
-        ffit(strtg, data[code])
+        ffit(strat, data[code])
     end
 end
 
-function fit_roll!(ffit, strtg, data)
-    @unpack rolltrn, rolltst = strtg
+function fit_roll!(ffit, strat, data)
+    @unpack rolltrn, rolltst = strat
     @roll for (dtrn, dtst) in roll(data, rolltrn, rolltst)
-        ffit(strtg, dtrn)
-        @indir "roll" backtest(strtg, dtst, mode = "test")
+        ffit(strat, dtrn)
+        @indir "roll" backtest(strat, dtst, mode = "test")
     end
 end
 
-function fit_thresh!(strtg, data; pattern = "θ")
-    params = map(threshgrid(strtg.sim)) do param
+function fit_thresh!(strat, data; pattern = "θ")
+    params = map(threshgrid(strat.sim)) do param
         filter(z -> occursin(pattern, z[1]), param)
     end
     isempty(params) && return 
     res = @showprogress map(params) do param
-        update_param!(strtg, param)
-        param, backtest(strtg, data)
+        update_param!(strat, param)
+        param, backtest(strat, data)
     end
     df = DataFrame()
     dicts = first.(res)
@@ -54,5 +54,5 @@ function fit_thresh!(strtg, data; pattern = "θ")
     to_csv(df, csv, encoding = "gbk")
     paramᵒ, pnlᵒ = sort(res, by = last)[end]
     println([string(k, ':', v, ' ') for (k, v) in paramᵒ]...)
-    update_param!(strtg, paramᵒ)
+    update_param!(strat, paramᵒ)
 end
