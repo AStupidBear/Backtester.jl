@@ -17,9 +17,9 @@ F, N, T = 2, 5, 100
 ti, Δt = DateTime(2019, 1, 1), Hour(1)
 时间戳 = range(ti, step = Δt, length = T ÷ 2)
 时间戳 = datetime2unix.(repeat(reshape(时间戳, 1, :), N, 2))
-价格 = cumsum(涨幅, dims = 2)
+最新价 = cumsum(涨幅, dims = 2)
 交易池 = ones(Float32, N, T)
-data = Data(特征名, 特征, 涨幅, 买手续费率, 卖手续费率, 涨停, 跌停, 代码, 时间戳, 价格, 交易池)
+data = Data(特征名, 特征, 涨幅, 买手续费率, 卖手续费率, 涨停, 跌停, 代码, 时间戳, 最新价, 交易池)
 
 import Backtester: simulate, transition
 mutable struct SignalSimulator{S}

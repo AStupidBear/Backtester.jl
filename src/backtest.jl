@@ -13,7 +13,7 @@ function backtest(strat, data; mode = "train")
         持仓天数 = 持仓天数′
     end
     data = repeat(data, 持仓天数)
-    @unpack 代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 涨停, 跌停, 价格 = data
+    @unpack 代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 涨停, 跌停, 最新价 = data
     if size(记忆仓位, 1) != size(虚拟信号, 1)
         fill!(resize!(记忆仓位, size(虚拟信号, 1)), 0f0)
     end
@@ -33,7 +33,7 @@ function backtest(strat, data; mode = "train")
     pnl = if mode == "train"
         summarize_train(代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 实际仓位, 综合评分, 最大持仓 * 持仓天数)
     else
-        summarize_test(代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 价格, 实际仓位, 综合评分, 虚拟信号, 最大持仓 * 持仓天数)
+        summarize_test(代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 最新价, 实际仓位, 综合评分, 虚拟信号, 最大持仓 * 持仓天数)
     end
     return pnl
 end
@@ -177,17 +177,17 @@ function summarize_train(代码, 交易池, 时间戳, 涨幅, 买手续费率, 
     return 分数
 end
 
-function summarize_test(代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 价格, 实际仓位, 综合评分, 虚拟信号, 最大持仓)
+function summarize_test(代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 最新价, 实际仓位, 综合评分, 虚拟信号, 最大持仓)
     收益率, 资金曲线, 年化收益率, 最大回撤, 夏普率 = summarize_core(代码, 交易池, 时间戳, 涨幅, 买手续费率, 卖手续费率, 实际仓位, 综合评分, 最大持仓)
     目录名 = mkpath(产生目录(时间戳, 代码, 年化收益率, 最大回撤, 夏普率))
     @indir 目录名 begin
         输出每日持股明细(代码, 时间戳, 实际仓位)
         输出资金和仓位曲线(时间戳, 实际仓位, 资金曲线)
-        输出个股交易记录(时间戳, 代码, 价格, 收益率, 实际仓位)
+        输出个股交易记录(时间戳, 代码, 最新价, 收益率, 实际仓位)
         新目录名 = 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大持仓)
         输出盈亏报告()
         parseenv("OUTPUT_POS", false) && 输出仓位评分信号(代码, 时间戳, 实际仓位, 综合评分, 虚拟信号)
-        parseenv("OUTPUT_MINPOS", false) && 输出分钟仓位(代码, 时间戳, 价格, 实际仓位, 收益率)
+        parseenv("OUTPUT_MINPOS", false) && 输出分钟仓位(代码, 时间戳, 最新价, 实际仓位, 收益率)
     end
     return 年化收益率
 end
