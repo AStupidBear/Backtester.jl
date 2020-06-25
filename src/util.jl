@@ -327,27 +327,31 @@ end
 unsqueeze(xs, dim) = reshape(xs, (size(xs)[1:dim-1]..., 1, size(xs)[dim:end]...))
 
 function read_csv(csv, a...; ka...)
-    cp(csv, "tmp.csv", force = true)
-    df = pd.read_csv("tmp.csv", a...; ka...)
-    rm("tmp.csv", force = true)
+    tmp = randstring() * ".csv"
+    cp(csv, tmp, force = true)
+    df = pd.read_csv(tmp, a...; ka...)
+    rm(tmp, force = true)
     return df
 end
 
 function to_csv(df, csv, a...; ka...)
-    df.to_csv("tmp.csv", a...; ka...)
-    cp("tmp.csv", csv, force = true)
+    tmp = randstring() * ".csv"
+    df.to_csv(tmp, a...; ka...)
+    mv(tmp, csv, force = true)
     return csv
 end
 
 function read_hdf(h5, a...; ka...)
-    cp(h5, "tmp.h5", force = true)
-    df = pd.read_hdf("tmp.h5", a...; ka...)
-    rm("tmp.h5", force = true)
+    tmp = randstring() * ".h5"
+    cp(h5, tmp, force = true)
+    df = pd.read_hdf(tmp, a...; ka...)
+    rm(tmp, force = true)
     return df
 end
 
 function to_hdf(df, h5, a...; ka...)
-    df.to_hdf("tmp.h5", a...; ka...)
-    cp("tmp.h5", h5, force = true)
+    tmp = randstring() * ".h5"
+    df.to_hdf(tmp, a...; ka...)
+    mv(tmp, h5, force = true)
     return h5
 end
