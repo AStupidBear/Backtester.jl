@@ -6,7 +6,7 @@ using Dates
 using Random
 using Test
 
-# cd(mktempdir())
+cd(mktempdir())
 
 F, N, T = 2, 5, 100
 Random.seed!(1234)
