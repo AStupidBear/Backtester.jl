@@ -272,12 +272,13 @@ function lockphase(x, P)
 end
 
 function get_index_price(;update = false)
+    haskey(ENV, "JQ_USER") || return nothing
     parquet = joinpath(DEPOT_PATH[1], "index.parquet")
     if isfile(parquet) && !update
         return pd.read_parquet(parquet)
     end
     @from jqdatasdk imports auth, get_price
-    auth(ENV["JQ_ID"], ENV["JQ_PASS"])
+    auth(ENV["JQ_USER"], ENV["JQ_PASS"])
     dfs = DataFrame[]
     for (pool, code) in zip(["SZ50", "HS300", "ZZ500", "ZZ1000"], 
         ["000016.XSHG", "000300.XSHG", "000905.XSHG", "000852.XSHG"])

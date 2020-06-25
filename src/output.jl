@@ -424,6 +424,7 @@ end
 
 function 添加指数(df)
     df_index = get_index_price()
+    isnothing(df_index) && return df
     df = df.merge(df_index, how = "left", left_index = true, right_index = true)
     for pool in df_index.columns
         df[pool] = df[pool] / df[pool].iloc[1]
