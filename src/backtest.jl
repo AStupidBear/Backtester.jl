@@ -51,7 +51,7 @@ function constraint(时间戳, 代码, 涨停, 跌停, 虚拟信号, 记忆仓�
             交易次数[n] >= 最多交易次数 && abs(当前仓位) > abs(之前仓位)
             当前仓位 = 之前仓位
         end
-        if 代码[n, t] != 代码[n, min(t + 1, end)]
+        if 代码[n, t] != 代码[n, min(t + 1, end)] || iszero(时间戳[n, t])
             当前仓位 = 0f0
         end
         if 时间戳[n, min(t + 1, end)] - 时间戳[n, t] > 3600 * 5 &&
@@ -107,7 +107,7 @@ end
 function summarize_core(涨幅, 时间戳, 代码, 最新价, 买1价, 卖1价, 手续费率, 交易池, 记忆仓位, 实际仓位, 综合评分, 最大持仓)
     记忆收益率 = @staticvar Dict{UInt64, Array{Float32}}()
     N, T = size(实际仓位)
-    天数 = sortednunique(unix2date, 时间戳[1, :])
+    天数 = sortednunique(unix2date, filter(!iszero, 时间戳[1, :]))
     复利 = get(ENV, "USE_COMPLEX", "0") == "1"
     收益率 = zero(实际仓位)
     之前仓位 = copy(记忆仓位)
@@ -119,8 +119,9 @@ function summarize_core(涨幅, 时间戳, 代码, 最新价, 买1价, 卖1价, 
             仓位变化 = 当前仓位 - 之前仓位[n]
             买滑点 = (卖1价[n, t] - 最新价[n, t]) / 最新价[n, t]
             卖滑点 = (最新价[n, t] - 买1价[n, t]) / 最新价[n, t]
+            交易成本 = 手续费率[n, t] * abs(仓位变化)
             滑点 = ifelse(仓位变化 > 0, 买滑点, -卖滑点) * 仓位变化
-            收益率[n, t] = 之前盈亏[n] - 手续费率[n, t] - 滑点
+            收益率[n, t] = 之前盈亏[n] - 交易成本 - 滑点
             之前仓位[n] = 当前仓位
         end
         t < T && for n in 1:N
