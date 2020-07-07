@@ -9,7 +9,7 @@ using Iconv, HDF5Utils, PandasLite, PyCallUtils, BSONMmap
 using StatsBase: corspearman
 
 export Strategy, backtest
-export @roll, @indir, @gc
+export combine, @roll, @indir, @gc
 
 include("util.jl")
 include("strategy.jl")
