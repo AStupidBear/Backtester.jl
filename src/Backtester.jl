@@ -4,8 +4,8 @@ module Backtester
 
 using Distributed, Statistics, Printf, Dates, DelimitedFiles, Random
 using Glob, DataStructures, Parameters, ProgressMeter
-using PyCall, BSON, StandardMarketData, MLSuiteBase
-using Iconv, HDF5Utils, PandasLite, PyCallUtils, BSONMmap
+using PyCall, StandardMarketData, MLSuiteBase
+using Iconv, HDF5Utils, PandasLite, PyCallUtils
 using StatsBase: corspearman
 
 export Strategy, backtest
