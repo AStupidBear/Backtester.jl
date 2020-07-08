@@ -224,7 +224,7 @@ function 输出分钟仓位(代码, 时间戳, 最新价, 实际仓位, 收益�
     to_csv(df, "分钟仓位.csv", index = false, encoding = "gbk")
 end
 
-combine(dirs) = 合并汇总(dirs)
+combine(dirs; remove = false) = (res = 合并汇总(dirs); rm.(dirs, force = true, recursive = true); res)
 
 function 合并汇总(目录列表)
     length(目录列表) < 1 && return
