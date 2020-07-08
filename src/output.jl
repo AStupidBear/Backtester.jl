@@ -340,7 +340,7 @@ end
 
 function 合并每日持股明细(csvs)
     all(isfile, csvs) || return
-    concat_txts("每日持股明细.csv", csvs)
+    SMD.concat_txts("每日持股明细.csv", csvs)
 end
 
 function 合并仓位评分信号(h5s)
@@ -353,12 +353,12 @@ end
 
 function 合并分钟仓位(csvs)
     all(isfile, csvs) || return
-    concat_txts("每日持股明细.csv", csvs)
+    SMD.concat_txts("每日持股明细.csv", csvs)
 end
 
 function 合并交易记录表(csvs)
     all(isfile, csvs) || return
-    concat_txts("交易记录表.csv", csvs)
+    SMD.concat_txts("交易记录表.csv", csvs)
 end
 
 function 输出盈亏报告()
