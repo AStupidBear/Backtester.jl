@@ -261,13 +261,13 @@ end
 function 合并资金和仓位曲线(csvs)
     复利 = get(ENV, "USE_COMPLEX", "0") == "1"
     all(isfile, csvs) || return ""
-    df = read_csv(csvs[1], encoding = "gbk")
-    资金有关列 = filter(collect(df.columns)) do c
-        occursin(r"资金曲线|BH|0", c)
-    end
-    for csv in csvs[2:end]
-        df′ = read_csv(csv, encoding = "gbk")
+    df = (dfs = read_csv.(csvs, encoding = "gbk")) |> first
+    所有列 = reduce(union, map(x -> x.columns.to_list(), dfs))
+    资金有关列 = filter(c -> c != "日期", 所有列)
+    for df′ in dfs[2:end]
         for c in 资金有关列
+            c ∉ df′.columns && (df′[c] = 1)
+            c ∉ df.columns && (df[c] = 1)
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
         df = df.append(df′, ignore_index = true)
@@ -285,15 +285,18 @@ end
 function 合并资金曲线(csvs)
     复利 = get(ENV, "USE_COMPLEX", "0") == "1"
     all(isfile, csvs) || return ""
-    df = read_csv(csvs[1], encoding = "gbk")
-    for csv in csvs[2:end]
-        df′ = read_csv(csv, encoding = "gbk")
-        for c in df.columns.drop("日期")
+    df = (dfs = read_csv.(csvs, encoding = "gbk")) |> first
+    所有列 = reduce(union, map(x -> x.columns.to_list(), dfs))
+    资金有关列 = filter(c -> c != "日期", 所有列)
+    for df′ in dfs[2:end]
+        for c in 资金有关列
+            c ∉ df′.columns && (df′[c] = 1)
+            c ∉ df.columns && (df[c] = 1)
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
         df = df.append(df′, ignore_index = true)
     end
-    to_csv(df, "资金曲线.csv", index = false, encoding = "gbk")
+    to_csv(df[所有列], "资金曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
     倍数, 天数 = 资金曲线[end], length(资金曲线)
     年化收益率 = 复利 ? 倍数^(224f0 / 天数) - 1 : 224f0 * (倍数 - 1f0) / 天数
