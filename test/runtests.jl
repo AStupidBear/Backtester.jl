@@ -1,5 +1,6 @@
 using Backtester
 using StandardMarketData
+using HDF5Utils
 using Statistics
 using Dates
 using Random
