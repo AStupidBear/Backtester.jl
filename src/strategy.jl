@@ -4,6 +4,12 @@
     持仓天数::Int = 1
     是否隔夜::Bool = true
     最多交易次数::Int = 1000
+    夜盘最早开仓时间::Float32 = 0
+    夜盘最晚开仓时间::Float32 = Inf
+    夜盘最晚平仓时间::Float32 = Inf
+    早盘最早开仓时间::Float32 = 0
+    早盘最晚开仓时间::Float32 = Inf
+    早盘最晚平仓时间::Float32 = Inf
 end
 
 function simulate end

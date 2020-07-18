@@ -332,3 +332,8 @@ function to_hdf(df, h5, a...; ka...)
     mv(tmp, h5, force = true)
     return h5
 end
+
+function to_trade_hour(timestamp)
+    hour = unix2hour(timestamp)
+    ifelse(hour > 16, hour - 24, hour)
+end

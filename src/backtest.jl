@@ -2,7 +2,9 @@ function backtest(strat, data; mode = "train")
     记忆仓位 = @staticvar zeros(Float32, 100000)
     F, N, T = size(data.特征)
     T < 1 && return 0f0
-    @unpack sim, 最大持仓, 持仓天数, 是否隔夜, 最多交易次数 = strat
+    @unpack sim, 最大持仓, 持仓天数, 最多交易次数,
+        夜盘最早开仓时间, 夜盘最晚开仓时间, 夜盘最晚平仓时间,
+        早盘最早开仓时间, 早盘最晚开仓时间,早盘最晚平仓时间 = strat
     最大持仓 = iszero(最大持仓) ? ncodes(data) : clamp(最大持仓, 1, ncodes(data))
     虚拟信号, 综合评分 = simulate(sim, data)
     持仓天数′ = size(虚拟信号, 1) ÷ N
@@ -22,7 +24,8 @@ function backtest(strat, data; mode = "train")
         是否为ST = repeat(getfeat(data, r"is_st", errors = "ignore"), 持仓天数)
         实际仓位 = select_stocks(涨停, 跌停, 交易池, 是否为ST, 虚拟信号, 综合评分, 记忆仓位, 最大持仓, 持仓天数, 转移函数)
     else
-        实际仓位 = constraint(时间戳, 代码, 涨停, 跌停, 虚拟信号, 记忆仓位, 转移函数, 是否隔夜, 最多交易次数)
+        实际仓位 = constraint(时间戳, 代码, 涨停, 跌停, 虚拟信号, 记忆仓位, 转移函数, 最多交易次数, 夜盘最早开仓时间, 
+                        夜盘最晚开仓时间, 夜盘最晚平仓时间, 早盘最早开仓时间, 早盘最晚开仓时间,早盘最晚平仓时间)
     end
     if size(实际仓位, 2) == 1 && !hasnan(实际仓位)
         记忆仓位 .= 实际仓位[:, end]
@@ -38,28 +41,35 @@ function backtest(strat, data; mode = "train")
     return pnl
 end
 
-function constraint(时间戳, 代码, 涨停, 跌停, 虚拟信号, 记忆仓位, 转移函数, 是否隔夜, 最多交易次数)
+function constraint(时间戳, 代码, 涨停, 跌停, 虚拟信号, 记忆仓位, 转移函数, 最多交易次数, 夜盘最早开仓时间, 夜盘最晚开仓时间, 夜盘最晚平仓时间, 早盘最早开仓时间, 早盘最晚开仓时间, 早盘最晚平仓时间)
     实际仓位 = zero(虚拟信号)
-    三点半 = Time(15, 30)
     N, T = size(实际仓位)
     交易次数 = zeros(Int, N)
     @inbounds for t in 1:T, n in 1:N
+        小时 = to_trade_hour(时间戳[n, t])
         之前仓位 = t > 1 ? 实际仓位[n, t - 1] : 记忆仓位[n]
-        当前仓位 = 转移函数(之前仓位, 虚拟信号[n, t])
+        if 夜盘最晚平仓时间 <= 小时 <= 8 || 早盘最晚平仓时间 <= 小时 <= 16
+            当前仓位 = 0f0
+        else
+            当前仓位 = 转移函数(之前仓位, 虚拟信号[n, t])
+        end
         if 涨停[n, t] == 1 && 当前仓位 > 之前仓位 ||
             跌停[n, t] == 1 && 当前仓位 < 之前仓位 ||
-            交易次数[n] >= 最多交易次数 && abs(当前仓位) > abs(之前仓位)
+            abs(当前仓位) > abs(之前仓位) && 
+            (交易次数[n] >= 最多交易次数 ||
+            !(夜盘最早开仓时间 <= 小时 <= 夜盘最晚开仓时间) ||
+            !(早盘最早开仓时间 <= 小时 <= 早盘最晚开仓时间))
             当前仓位 = 之前仓位
         end
-        if 代码[n, t] != 代码[n, min(t + 1, end)] || iszero(时间戳[n, t])
-            当前仓位 = 0f0
-        end
-        if 时间戳[n, min(t + 1, end)] - 时间戳[n, t] > 3600 * 5 &&
-            (3600 * 9 <= 时间戳[n, t] % (3600 * 24) <= 3600 * 15.5)
-            当前仓位 = ifelse(是否隔夜, 当前仓位, 0f0)
+        小时⁻ = to_trade_hour(时间戳[n, max(1, t - 1)])
+        if 小时⁻ < 8 <= 小时
             交易次数[n] = 0
         else
             交易次数[n] += 当前仓位 != 之前仓位
+        end
+        if 代码[n, t] != 代码[n, min(t + 1, end)] || 时间戳[n, t] == 0
+            当前仓位 = 0f0
+            交易次数[n] = 0
         end
         实际仓位[n, t] = 当前仓位
     end
