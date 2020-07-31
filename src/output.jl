@@ -263,7 +263,7 @@ function 合并资金和仓位曲线(csvs)
     all(isfile, csvs) || return ""
     df = (dfs = read_csv.(csvs, encoding = "gbk")) |> first
     所有列 = reduce(union, map(x -> x.columns.to_list(), dfs))
-    资金有关列 = filter(c -> c != "日期", 所有列)
+    资金有关列 = filter(c -> !occursin(r"日期|份额", c), 所有列)
     for df′ in dfs[2:end]
         for c in 资金有关列
             c ∉ df′.columns && (df′[c] = 1)
@@ -287,7 +287,7 @@ function 合并资金曲线(csvs)
     all(isfile, csvs) || return ""
     df = (dfs = read_csv.(csvs, encoding = "gbk")) |> first
     所有列 = reduce(union, map(x -> x.columns.to_list(), dfs))
-    资金有关列 = filter(c -> c != "日期", 所有列)
+    资金有关列 = filter(c -> !occursin(r"日期|份额", c), 所有列)
     for df′ in dfs[2:end]
         for c in 资金有关列
             c ∉ df′.columns && (df′[c] = 1)
