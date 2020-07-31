@@ -337,3 +337,5 @@ function to_trade_hour(timestamp)
     hour = unix2hour(timestamp)
     ifelse(hour > 16, hour - 24, hour)
 end
+
+fillnan(x) = ifelse(isnan(x), zero(x), x)
