@@ -227,7 +227,7 @@ end
 function combine(dir; remove = false)
     cdir = 合并汇总(glob("*%*", dir))
     remove && rm(dir, recursive = true)
-    return dir * "_" * cdir
+    mv(cdir, dir * "_" * cdir, force = true)
 end
 
 function 合并汇总(目录列表)
