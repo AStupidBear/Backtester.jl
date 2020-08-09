@@ -85,7 +85,7 @@ macro roll(ex)
             mv("roll", "roll-" * date, force = true)
         end
         $(esc(ex))
-        combine(glob("*%*", "roll"))
+        combine("roll")
     end
 end
 
@@ -267,25 +267,6 @@ function get_index_price(;update = false)
     df = df.ffill().bfill()
     df.to_parquet(parquet)
     return df
-end
-
-macro roll(ex)
-    quote
-        if isdir("roll")
-            date = Dates.format(today(), "yymmdd")
-            mv("roll", "roll-" * date, force = true)
-        end
-        $(esc(ex))
-        combine(glob("*%*", "roll"))
-    end
-end
-
-macro indir(dir, ex)
-    cwd = gensym()
-    quote
-        mkpath($dir); $cwd = pwd(); cd($dir)
-        try $ex finally cd($cwd) end
-    end |> esc
 end
 
 function multisort(xs::AbstractArray...; ka...)
