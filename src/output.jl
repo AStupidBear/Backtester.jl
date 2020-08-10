@@ -96,7 +96,7 @@ function 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大�
         分品种每日收益率 = 每行每股每日收益率.groupby(["时间戳", "代码"]).mean()
         分品种每日收益率 = 分品种每日收益率.to_frame().pivot_table(columns = "代码", index = "时间戳", values = "收益率").fillna(0)
         分品种资金曲线 = 复利 ? (1 + 分品种每日收益率).cumprod() : 1 + 分品种每日收益率.cumsum()
-        资金曲线 = pd.concat([资金曲线, 分品种资金曲线], axis = 1)
+        资金曲线 = pd.concat([资金曲线, 分品种资金曲线], axis = 1, sort = true)
     end
     资金曲线 = 添加指数(资金曲线)
     资金曲线.index.name = "日期"
@@ -353,7 +353,7 @@ end
 function 合并仓位评分信号(h5s)
     all(isfile, h5s) || return
     for key in ["实际仓位", "综合评分", "虚拟信号"]
-        df = pd.concat(pd.read_hdf.(h5s, key), axis = 1)
+        df = pd.concat(pd.read_hdf.(h5s, key), axis = 1, sort = true)
         to_hdf(df, "仓位评分信号.h5", key, complib = "lzo", complevel = 9)
     end
 end
@@ -389,7 +389,7 @@ function 输出盈亏报告()
         end
         pushfirst!(srs, Series(单周期盈亏报告(df, df′), name = "ALL"))
         filter!(!isempty, srs)
-        dfc = pd.concat(srs, axis = 1)
+        dfc = pd.concat(srs, axis = 1, sort = true)
         dfc = freq == "A" ? dfc : dfc.T
         cn = freq == "A" ? "年" : "月"
         to_csv(dfc, cn * "盈亏报告.csv", encoding = "gbk")
