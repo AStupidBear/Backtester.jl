@@ -64,7 +64,7 @@ function 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大�
             Tuple{Float64, String, Float32, Float32, Int64}}
     nts = nttype[]
     dict = DefaultDict{Int, Int}(() -> 0)
-    @showprogress "pnl..." for n in 1:N
+    @showprogress "pnl..." 10 for n in 1:N
         pnl, date = 0f0, 时间戳[n, 1]
         date = date ÷ 86400 * 86400
         for t in 1:T
