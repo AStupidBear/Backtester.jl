@@ -16,6 +16,7 @@ function backtest(strat, data; mode = "train")
     end
     data = repeat(data, 持仓天数)
     @unpack 涨幅, 时间戳, 代码, 最新价, 买1价, 卖1价, 手续费率, 涨停, 跌停, 交易池 = data
+    map!(fillnan, 时间戳, 时间戳)
     if size(记忆仓位, 1) != size(虚拟信号, 1)
         fill!(resize!(记忆仓位, size(虚拟信号, 1)), 0f0)
     end
