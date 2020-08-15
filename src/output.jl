@@ -225,8 +225,10 @@ function 输出分钟仓位(代码, 时间戳, 最新价, 实际仓位, 收益�
 end
 
 function combine(dir; remove = false)
+    isdir(dir) || return
     cdir = 合并汇总(glob("*%*", dir))
-    remove && rm(dir, recursive = true)
+    isnothing(cdir) && return
+    remove && rm(dir, force = true, recursive = true)
     mv(cdir, dir * "_" * cdir, force = true)
 end
 
