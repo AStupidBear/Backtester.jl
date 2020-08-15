@@ -302,6 +302,7 @@ function 合并资金曲线(csvs)
         end
         df = df.append(df′, ignore_index = true)
     end
+    df = df.groupby("日期").last().reset_index()
     to_csv(df[所有列], "资金曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
     倍数, 天数 = 资金曲线[end], length(资金曲线)
