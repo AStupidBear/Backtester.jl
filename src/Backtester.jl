@@ -8,8 +8,9 @@ using PyCall, StandardMarketData, MLSuiteBase
 using Iconv, HDF5Utils, PandasLite, PyCallUtils
 using StatsBase: corspearman
 
-export Strategy, backtest
-export combine, @roll, @indir, @gc
+export Strategy, backtest, combine
+export eglob, rglob, fillnan, fillnan!
+export @NT, @redirect, @indir, @gc, @roll
 
 include("util.jl")
 include("strategy.jl")

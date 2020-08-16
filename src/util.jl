@@ -51,7 +51,6 @@ function lcp(strs)
     return String(take!(io))
 end
 
-
 function findtoroot(file)
     dir = pwd()
     while !isfile(file)
@@ -222,17 +221,6 @@ function parseenv(key, default::T) where T
     end
 end
 
-function hasnan(x)
-    for i in eachindex(x)
-        isnan(x[i]) && return true
-    end
-    false
-end
-
-Base.merge(grids::AbstractArray{<:AbstractDict}...) = map(ds -> merge(ds...), Iterators.product(grids...))
-
-bash(str) = run(`bash -c $str`)
-
 macro gc(exs...)
     Expr(:block, [:($ex = 0) for ex in exs]..., :(@eval GC.gc())) |> esc
 end
@@ -320,3 +308,5 @@ function to_trade_hour(timestamp)
 end
 
 fillnan(x) = ifelse(isnan(x), zero(x), x)
+
+fillnan!(x) = map!(fillnan, x, x)

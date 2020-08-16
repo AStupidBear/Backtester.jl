@@ -29,7 +29,7 @@ function backtest(strat, data; mode = "train")
         实际仓位 = constraint(时间戳, 代码, 买1价, 卖1价, 涨停, 跌停, 虚拟信号, 记忆仓位, 转移函数, 最多交易次数, 禁止平今, 
                     夜盘最早开仓时间, 夜盘最晚开仓时间, 夜盘最晚平仓时间, 早盘最早开仓时间, 早盘最晚开仓时间, 早盘最晚平仓时间)
     end
-    if size(实际仓位, 2) == 1 && !hasnan(实际仓位)
+    if size(实际仓位, 2) == 1 && !any(isnan, 实际仓位)
         记忆仓位 .= 实际仓位[:, end]
     end
     if T > 1 && parseenv("CLOSE_LAST_POS", true)
