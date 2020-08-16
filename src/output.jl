@@ -86,7 +86,8 @@ function 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大�
     df = DataFrame(nts)
     df["时间戳"] = df["时间戳"].mul(1e9).astype("datetime64[ns]")
     每行每股每日收益率 = df.groupby(["时间戳", "行数", "代码"])["收益率"].sum()
-    最大持仓 = min(最大持仓, df.groupby("时间戳")["代码"].count().max())
+    最大持仓 = min(最大持仓, df.groupby("时间戳")["代码"].nunique().max())
+    @debug @show 最大持仓
     每日收益率 = 每行每股每日收益率.groupby("时间戳").sum().div(最大持仓).to_frame()
     资金曲线 = (复利 ? (1 + 每日收益率).cumprod() : 1 + 每日收益率.cumsum()).rename(columns = Dict("收益率" => "资金曲线"))
     资金曲线["持仓份额"] = df.groupby("时间戳")["仓位"].sum()
@@ -276,7 +277,7 @@ function 合并资金和仓位曲线(csvs)
             c ∉ df.columns && (df[c] = 1)
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
-        df = df.append(df′, ignore_index = true)
+        df = df.append(df′, ignore_index = true, sort = true)
     end
     to_csv(df, "资金和仓位曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
@@ -300,7 +301,7 @@ function 合并资金曲线(csvs)
             c ∉ df.columns && (df[c] = 1)
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
-        df = df.append(df′, ignore_index = true)
+        df = df.append(df′, ignore_index = true, sort = true)
     end
     df = df.groupby("日期").last().reset_index()
     to_csv(df[所有列], "资金曲线.csv", index = false, encoding = "gbk")
