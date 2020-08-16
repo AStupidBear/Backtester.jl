@@ -238,9 +238,9 @@ end
 
 function get_index_price(;update = false)
     haskey(ENV, "JQ_USER") || return nothing
-    parquet = joinpath(DEPOT_PATH[1], "index.parquet")
-    if isfile(parquet) && !update
-        return pd.read_parquet(parquet)
+    pkl = joinpath(DEPOT_PATH[1], "index.pkl")
+    if isfile(pkl) && !update
+        return pd.read_pickle(pkl)
     end
     @from jqdatasdk imports auth, get_price
     auth(ENV["JQ_USER"], ENV["JQ_PASS"])
@@ -253,7 +253,7 @@ function get_index_price(;update = false)
     end
     df = pdhcat(dfs...)
     df = df.ffill().bfill()
-    df.to_parquet(parquet)
+    df.to_pickle(pkl)
     return df
 end
 
