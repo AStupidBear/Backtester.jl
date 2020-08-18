@@ -397,6 +397,21 @@ function 输出盈亏报告()
         cn = freq == "A" ? "年" : "月"
         to_csv(dfc, cn * "盈亏报告.csv", encoding = "gbk")
     end
+    df = pd.read_csv("交易记录表.csv", encoding = "gbk", parse_dates = ["开仓时间", "平仓时间"])
+    df["开仓时刻"] = df["开仓时间"].dt.time
+    df["平仓时刻"] = df["平仓时间"].dt.time
+    df.to_csv("交易记录表.csv", encoding = "gbk", index = false)
+    df["日期"] = pd.to_datetime(df["开仓时间"]).dt.date
+    df.set_index("日期", inplace = true)
+    df′ = DataFrame()
+    df′["交易次数"] = df["代码"].groupby("日期").count()
+    df′["最大仓位"] = df["代码"].groupby("日期").nunique().max()
+    df′["平均开仓滑点"] = df["开仓滑点"].groupby("日期").mean()
+    df′["平均平仓滑点"] = df["平仓滑点"].groupby("日期").mean()
+    df′["平均收益率"] = df["收益率"].groupby("日期").sum() / df′["最大仓位"]
+    df′["平均开仓时间"] =df["开仓时间"].astype("int").groupby("日期").mean().astype("datetime64[ns]")
+    df′["平均平仓时间"] = df["平仓时间"].astype("int").groupby("日期").mean().astype("datetime64[ns]")
+    df′.reset_index().to_csv("交易记录表汇总.csv", encoding = "gbk", index = false)
 end
 
 function 单周期盈亏报告(df, df′)
