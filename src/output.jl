@@ -226,7 +226,10 @@ end
 
 function combine(dir; remove = false)
     isdir(dir) || return
-    cdir = 合并汇总(glob("*%*", dir))
+    dirs = filter(glob("*%*", dir)) do dir
+        !occursin("NaN", dir)
+    end
+    cdir = 合并汇总(dirs)
     isnothing(cdir) && return
     remove && rm(dir, force = true, recursive = true)
     mv(cdir, dir * "_" * cdir, force = true)
