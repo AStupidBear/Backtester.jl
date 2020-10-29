@@ -147,7 +147,14 @@ end
 function summarize_core(涨幅, 时间戳, 代码, 最新价, 买1价, 卖1价, 手续费率, 交易池, 记忆仓位, 实际仓位, 综合评分, 最大持仓)
     记忆收益率 = @staticvar Dict{UInt64, Array{Float32}}()
     N, T = size(实际仓位)
-    天数 = sortednunique(unix2date, filter(!iszero, 时间戳[1, :]))
+    local 天数
+    for n in 1:size(时间戳, 1)
+        时间戳一行 = filter(!iszero, 时间戳[n, :])
+        if !isempty(时间戳一行)
+            天数 = sortednunique(unix2date, 时间戳一行)
+            break
+        end
+    end
     复利 = get(ENV, "USE_COMPLEX", "0") == "1"
     收益率 = zero(实际仓位)
     之前仓位 = copy(记忆仓位)
