@@ -261,7 +261,7 @@ function 合并汇总(目录列表)
         合并资金和仓位曲线(资金和仓位曲线文件)
         合并资金曲线(资金曲线文件)
     end
-    @indir 合并目录名 输出盈亏报告()
+    @indir 合并目录名 报告后处理()
     目录模式 = r"-?\d+\.\d+倍\d+%\-?\d+\.\d+"
     最终目录名 = "合并汇总" * replace(合并目录名, 目录模式 => 结果名)
     mv(合并目录名, 最终目录名, force = true)
@@ -270,7 +270,7 @@ end
 function 合并资金和仓位曲线(csvs)
     复利 = get(ENV, "USE_COMPLEX", "0") == "1"
     all(isfile, csvs) || return ""
-    df = (dfs = read_csv.(csvs, encoding = "gbk")) |> first
+    df = (dfs = filter(!isempty, pd.read_csv.(csvs, encoding = "gbk"))) |> first
     所有列 = reduce(union, map(x -> x.columns.to_list(), dfs))
     资金有关列 = filter(c -> !occursin(r"日期|份额", c), 所有列)
     for df′ in dfs[2:end]
@@ -294,9 +294,10 @@ end
 function 合并资金曲线(csvs)
     复利 = get(ENV, "USE_COMPLEX", "0") == "1"
     all(isfile, csvs) || return ""
-    df = (dfs = read_csv.(csvs, encoding = "gbk")) |> first
+    df = (dfs = filter(!isempty, pd.read_csv.(csvs, encoding = "gbk"))) |> first
     所有列 = reduce(union, map(x -> x.columns.to_list(), dfs))
     资金有关列 = filter(c -> !occursin(r"日期|份额", c), 所有列)
+    @eval Main dfs = $(copy.(dfs))
     for df′ in dfs[2:end]
         for c in 资金有关列
             c ∉ df′.columns && (df′[c] = 1)
@@ -305,6 +306,7 @@ function 合并资金曲线(csvs)
         end
         df = df.append(df′, ignore_index = true, sort = true)
     end
+    @eval Main df = $df
     df = df.groupby("日期").last().reset_index()
     to_csv(df[所有列], "资金曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
@@ -374,10 +376,15 @@ function 合并交易记录表(csvs)
     SMD.concat_txts("交易记录表.csv", csvs)
 end
 
+function 报告后处理()
+    汇总交易记录表()
+    输出盈亏报告()
+end
+
 function 输出盈亏报告()
-    df = read_csv("资金曲线.csv", encoding = "gbk", parse_dates = ["日期"], index_col = "日期")
+    df = pd.read_csv("资金曲线.csv", encoding = "gbk", parse_dates = ["日期"], index_col = "日期")
     df["收益率"] = df["资金曲线"].pct_change()
-    df′ = read_csv("交易记录表.csv", encoding = "gbk", parse_dates = ["开仓时间", "平仓时间"])
+    df′ = pd.read_csv("交易记录表.csv", encoding = "gbk", parse_dates = ["开仓时间", "平仓时间"])
     isempty(df′) && return
     for freq in ["A"]
         srs = map(df.groupby(pd.Grouper(freq = freq))) do (t, dft)
@@ -400,21 +407,27 @@ function 输出盈亏报告()
         cn = freq == "A" ? "年" : "月"
         to_csv(dfc, cn * "盈亏报告.csv", encoding = "gbk")
     end
+end
+
+function 汇总交易记录表()
     df = pd.read_csv("交易记录表.csv", encoding = "gbk", parse_dates = ["开仓时间", "平仓时间"])
     df["开仓时刻"] = df["开仓时间"].dt.time
     df["平仓时刻"] = df["平仓时间"].dt.time
-    df.to_csv("交易记录表.csv", encoding = "gbk", index = false)
-    df["日期"] = pd.to_datetime(df["开仓时间"]).dt.date
-    df.set_index("日期", inplace = true)
-    df′ = DataFrame()
-    df′["交易次数"] = df["代码"].groupby("日期").count()
-    df′["最大仓位"] = df["代码"].groupby("日期").nunique().max()
-    df′["平均开仓滑点"] = df["开仓滑点"].groupby("日期").mean()
-    df′["平均平仓滑点"] = df["平仓滑点"].groupby("日期").mean()
-    df′["平均收益率"] = df["收益率"].groupby("日期").sum() / df′["最大仓位"]
-    df′["平均开仓时间"] =df["开仓时间"].astype("int").groupby("日期").mean().astype("datetime64[ns]")
-    df′["平均平仓时间"] = df["平仓时间"].astype("int").groupby("日期").mean().astype("datetime64[ns]")
-    df′.reset_index().to_csv("交易记录表汇总.csv", encoding = "gbk", index = false)
+    to_csv(df, "交易记录表.csv", encoding = "gbk", index = false)
+    if !isempty(df)
+        df["日期"] = pd.to_datetime(df["开仓时间"]).dt.date
+        df.set_index("日期", inplace = true)
+        df′ = DataFrame()
+        df′["交易次数"] = df["代码"].groupby("日期").count()
+        df′["最大仓位"] = df["代码"].groupby("日期").nunique().max()
+        df′["平均开仓滑点"] = df["开仓滑点"].groupby("日期").mean()
+        df′["平均平仓滑点"] = df["平仓滑点"].groupby("日期").mean()
+        df′["平均收益率"] = df["收益率"].groupby("日期").sum() / df′["最大仓位"]
+        df′["平均开仓时间"] =df["开仓时间"].astype("int").groupby("日期").mean().astype("datetime64[ns]")
+        df′["平均平仓时间"] = df["平仓时间"].astype("int").groupby("日期").mean().astype("datetime64[ns]")
+        to_csv(df′.reset_index(), "交易记录表汇总.csv", encoding = "gbk", index = false)
+    end
+    return nothing
 end
 
 function 单周期盈亏报告(df, df′)
