@@ -411,8 +411,12 @@ end
 
 function 汇总交易记录表()
     df = pd.read_csv("交易记录表.csv", encoding = "gbk", parse_dates = ["开仓时间", "平仓时间"])
-    df["开仓时刻"] = df["开仓时间"].dt.time
-    df["平仓时刻"] = df["平仓时间"].dt.time
+    if isempty(df)
+        df["开仓时刻"] = df["平仓时刻"] = 0
+    else
+        df["开仓时刻"] = df["开仓时间"].dt.time
+        df["平仓时刻"] = df["平仓时间"].dt.time
+    end
     to_csv(df, "交易记录表.csv", encoding = "gbk", index = false)
     if !isempty(df)
         df["日期"] = pd.to_datetime(df["开仓时间"]).dt.date
