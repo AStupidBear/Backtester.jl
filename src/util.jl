@@ -154,12 +154,12 @@ function pct_change(x, T)
     return z
 end
 
-@noinline function sharperatio(资金曲线, 一年天数 = 224)
+@noinline function sharperatio(资金曲线, 一年天数 = 240)
     日收益率 = pct_change(资金曲线, 1)
     年化夏普率 = eltype(资金曲线)(mean(日收益率) ⧶ std(日收益率) * √一年天数)
 end
 
-@noinline function sortinoratio(资金曲线, 一年天数 = 224)
+@noinline function sortinoratio(资金曲线, 一年天数 = 240)
     日收益率 = pct_change(资金曲线, 1)
     eltype(r)(mean(日收益率) ⧶ std(min.(日收益率, 0)) * √一年天数)
 end

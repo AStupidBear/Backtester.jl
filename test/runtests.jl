@@ -33,7 +33,7 @@ ti, Δt = DateTime(2019, 1, 1), Hour(1)
 data = Data(特征名, 特征, 涨幅, 时间戳, 代码, 最新价, 买1价, 卖1价, 手续费率, 涨停, 跌停, 交易池)
 sgnl = reshape(sum(特征, dims = 1), N, T)
 sgnl = @. ifelse(sgnl > 0, 1f0, -1f0)
-pnl′ = sum(mean(abs, 涨幅[:, 2:end] , dims = 1)) / ndays(data) * 224
+pnl′ = sum(mean(abs, 涨幅[:, 2:end] , dims = 1)) / ndays(data) * 240
 strat = Strategy(sim = SignalSimulator(sgnl))
 pnl = backtest(strat, data, mode = "train")
 @test pnl ≈ pnl′
@@ -51,6 +51,6 @@ data = Data(特征名, 特征, 涨幅, 时间戳, 代码, 最新价, 买1价, �
 sgnl = @. ifelse(rand() > 0.05, sgnl, -sgnl)
 strat = Strategy(sim = SignalSimulator(sgnl))
 pnl = backtest(strat, data, mode = "train")
-pnl′ = sum(mean(abs, 涨幅[:, 2:end] , dims = 1)) / ndays(data) * 224
+pnl′ = sum(mean(abs, 涨幅[:, 2:end] , dims = 1)) / ndays(data) * 240
 @test pnl > pnl′ * 0.6
 backtest(strat, data, mode = "test")
