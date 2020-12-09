@@ -65,22 +65,24 @@ function 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大�
     nts = nttype[]
     dict = DefaultDict{Int, Int}(() -> 0)
     @showprogress 10 "pnl..." for n in 1:N
-        pnl, date = 0f0, 时间戳[n, 1]
-        date = date ÷ 86400 * 86400
+        pnl, date = 0f0, 0.0
         for t in 1:T
-            iszero(时间戳[n, t]) && continue
-            pos = 实际仓位[n, t]
-            date′ = 时间戳[n, min(end, t + 1)]
-            date′ = date′ ÷ 86400 * 86400
-            pnl += 收益率[n, t]
-            if date′ != date && date′ > 0 || t == T
-                code = replace(代码[n, t], r"(?<=[a-zA-Z])\d+" => "")
-                nt = nttype((date, code, pnl, pos, n))
-                push!(nts, nt)
-                dict[date] += 1
-                pnl = 0f0
+            if date == 0 && 时间戳[n, t] > 0
+                date = 时间戳[n, t] ÷ 86400 * 86400
             end
-            date = date′
+            pos = 实际仓位[n, t]
+            date′ = 时间戳[n, min(end, t + 1)] ÷ 86400 * 86400
+            pnl += 收益率[n, t]
+            if date > 0
+                if date′ > 0 && date′ != date || t == T
+                    code = replace(代码[n, t], r"(?<=[a-zA-Z])\d+" => "")
+                    nt = nttype((date, code, pnl, pos, n))
+                    push!(nts, nt)
+                    dict[date] += 1
+                    pnl = 0f0
+                end
+                date = date′
+            end
         end
     end
     df = DataFrame(nts)
