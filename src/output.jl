@@ -41,9 +41,6 @@ function 输出资金和仓位曲线(时间戳, 实际仓位, 资金曲线)
             卖出份额 += max(0f0, -仓位变化)
             之前实际仓位[n] = 当前仓位
         end
-        if t > 1
-            资金涨幅 = (资金曲线[t] - 资金曲线[t - 1]) / 资金曲线[t - 1]
-        end
         当前日期 = unix2date(时间戳[1, t])
         if 当前日期 != 之前日期
             for x in (当前日期, 资金曲线[t], 持仓份额, 多空份额, 开仓份额, 平仓份额, 买入份额, 卖出份额)
@@ -299,7 +296,6 @@ function 合并资金曲线(csvs)
     df = (dfs = filter(!isempty, pd.read_csv.(csvs, encoding = "gbk"))) |> first
     所有列 = reduce(union, map(x -> x.columns.to_list(), dfs))
     资金有关列 = filter(c -> !occursin(r"日期|份额", c), 所有列)
-    @eval Main dfs = $(copy.(dfs))
     for df′ in dfs[2:end]
         for c in 资金有关列
             c ∉ df′.columns && (df′[c] = 1)
@@ -308,7 +304,6 @@ function 合并资金曲线(csvs)
         end
         df = df.append(df′, ignore_index = true, sort = true)
     end
-    @eval Main df = $df
     df = df.groupby("日期").last().reset_index()
     to_csv(df[所有列], "资金曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
@@ -479,7 +474,7 @@ function 单周期盈亏报告(df, df′)
     sr = Series(OrderedDict(pairs(nt)))
 
     对冲 = df.filter(regex = "对冲")
-    对冲 = 对冲.iloc[end, :] / 对冲.iloc[1, :] - 1
+    对冲 = 对冲.iloc[end, :] - 对冲.iloc[1, :]
     sr = sr.append(对冲)
     return sr
 end
@@ -490,8 +485,7 @@ function 添加指数(df)
     df = df.merge(df_index, how = "left", left_index = true, right_index = true)
     for pool in df_index.columns
         df[pool] = df[pool] / df[pool].iloc[1]
-        Δ = df["资金曲线"].pct_change() - df[pool].pct_change()
-        df["对冲" * pool] = (1 + Δ).fillna(1).cumprod()
+        df["对冲" * pool] = df["资金曲线"] - df[pool] + 1
     end
     return df
 end
