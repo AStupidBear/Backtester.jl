@@ -80,7 +80,7 @@ end
 macro roll(ex)
     quote
         if isdir("roll")
-            date = Dates.format(today(), "yymmdd")
+            date = Dates.format(today(), dateformat"yymmdd")
             mv("roll", "roll-" * date, force = true)
         end
         $(esc(ex))
