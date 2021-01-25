@@ -474,7 +474,7 @@ function 单周期盈亏报告(df, df′)
     sr = Series(OrderedDict(pairs(nt)))
 
     对冲 = df.filter(regex = "对冲")
-    对冲 = 对冲.iloc[end, :] - 对冲.iloc[1, :]
+    对冲 = 对冲.iloc[end] - 对冲.iloc[1]
     sr = sr.append(对冲)
     return sr
 end
