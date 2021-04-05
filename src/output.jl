@@ -304,7 +304,8 @@ function 合并资金曲线(csvs)
         end
         df = df.append(df′, ignore_index = true, sort = true)
     end
-    df = df.groupby("日期").last().reset_index()
+    df = df.drop(columns = filter(c -> occursin(r"SZ|HS|ZZ", c), 所有列))
+    df = 添加指数(df.groupby("日期").last()).reset_index()
     to_csv(df[所有列], "资金曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
     倍数, 天数 = 资金曲线[end], length(资金曲线)
@@ -453,6 +454,8 @@ function 单周期盈亏报告(df, df′)
     交易次数 = length(df′)
     做多次数 = (df′["持仓"] > 0).sum()
     做空次数 = 交易次数 - 做多次数
+    做多收益率 = df′.loc[df′["持仓"] > 0, "收益率"].sum()
+    做空收益率 = df′.loc[df′["持仓"] < 0, "收益率"].sum()
     盈利次数 = (df′["收益率"] > 0).sum()
     亏损次数 = (df′["收益率"] < 0).sum()
     平均每次交易盈利率 = df′["收益率"].mean()
@@ -468,9 +471,9 @@ function 单周期盈亏报告(df, df′)
     nt = @NT(收益, 夏普率, 最大回撤, 最大回撤期, 收益回撤比, 平均持仓时间, 交易天数,
         盈利天数, 亏损天数, 最长连续盈利天数, 最长连续亏损天数, 平均日盈利率,
         平均盈利日盈利率, 平均亏损日亏损率, 日盈亏比, 最大日盈利率, 最大日亏损率,
-        交易次数, 做多次数, 做空次数, 盈利次数, 亏损次数, 平均每次交易盈利率,
-        平均盈利交易盈利率,平均亏损交易亏损率, 次盈亏比, 最大单次盈利率,
-        最大单次亏损率, 最长连续盈利次数, 最长连续亏损次数)
+        交易次数, 做多次数, 做空次数, 做多收益率, 做空收益率, 盈利次数, 亏损次数, 
+        平均每次交易盈利率, 平均盈利交易盈利率, 平均亏损交易亏损率, 次盈亏比, 
+        最大单次盈利率,最大单次亏损率, 最长连续盈利次数, 最长连续亏损次数)
     sr = Series(OrderedDict(pairs(nt)))
 
     对冲 = df.filter(regex = "对冲")
