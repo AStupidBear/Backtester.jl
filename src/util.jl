@@ -237,17 +237,16 @@ function lockphase(x, P)
 end
 
 function get_index_price(;update = false)
-    haskey(ENV, "JQ_USER") || return nothing
     pkl = joinpath(DEPOT_PATH[1], "index.pkl")
     if isfile(pkl) && !update
         return pd.read_pickle(pkl)
     end
-    @from jqdatasdk imports auth, get_price
-    auth(ENV["JQ_USER"], ENV["JQ_PASS"])
+    haskey(ENV, "JQDATA_USERNAME") || return nothing
+    jqdata = pyimport("jqdatasdk")
     dfs = DataFrame[]
     for (pool, code) in zip(["SZ50", "HS300", "ZZ500", "ZZ1000"], 
         ["000016.XSHG", "000300.XSHG", "000905.XSHG", "000852.XSHG"])
-        df = get_price(code, start_date = "2010-01-01", end_date = string(Date(now())), fields = "close")
+        df = jqdata.get_price(code, start_date = "2010-01-01", end_date = string(Date(now())), fields = "close")
         df.rename(columns = Dict("close" => pool), inplace = true)
         push!(dfs, df)
     end
