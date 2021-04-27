@@ -9,7 +9,7 @@ using Iconv, HDF5Utils, PandasLite, PyCallUtils
 using StatsBase: corspearman
 
 export Strategy, backtest, combine
-export eglob, rglob, fillnan, fillnan!
+export eglob, rglob
 export @NT, @redirect, @indir, @gc, @roll
 
 include("util.jl")
