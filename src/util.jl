@@ -236,10 +236,13 @@ function lockphase(x, P)
     return x′
 end
 
-function get_index_price(;update = false)
+function get_index_price(;update = false, delay = 30)
     pkl = joinpath(DEPOT_PATH[1], "index.pkl")
     if isfile(pkl) && !update
-        return pd.read_pickle(pkl)
+        df = pd.read_pickle(pkl)
+        if now() - df.index[end] < Day(delay)
+            return df
+        end
     end
     haskey(ENV, "JQDATA_USERNAME") || return nothing
     jqdata = pyimport("jqdatasdk")
