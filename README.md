@@ -1,3 +1,2 @@
-[![Build Status](https://travis-ci.com/AStupidBear/Backtester.jl.svg?branch=master)](https://travis-ci.com/AStupidBear/Backtester.jl)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/AStupidBear/Backtester.jl?svg=true)](https://ci.appveyor.com/project/AStupidBear/Backtester-jl)
+[![Build Status](https://github.com/AStupidBear/Backtester.jl/workflows/CI/badge.svg)](https://github.com/AStupidBear/Backtester.jl/actions)
 [![Coverage](https://codecov.io/gh/AStupidBear/Backtester.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/AStupidBear/Backtester.jl)
