@@ -425,8 +425,8 @@ function 汇总交易记录表()
         df′["平均开仓滑点"] = df["开仓滑点"].groupby("日期").mean()
         df′["平均平仓滑点"] = df["平仓滑点"].groupby("日期").mean()
         df′["平均收益率"] = df["收益率"].groupby("日期").sum() / df′["最大仓位"]
-        df′["平均开仓时间"] = df["开仓时间"].astype("int64").groupby("日期").mean().astype("datetime64[ns]")
-        df′["平均平仓时间"] = df["平仓时间"].astype("int64").groupby("日期").mean().astype("datetime64[ns]")
+        df′["平均开仓时间"] = df["开仓时间"].view("int64").groupby("日期").mean().astype("datetime64[ns]")
+        df′["平均平仓时间"] = df["平仓时间"].view("int64").groupby("日期").mean().astype("datetime64[ns]")
         to_csv(df′.reset_index(), "交易记录表汇总.csv", encoding = "gbk", index = false)
     end
     return nothing
