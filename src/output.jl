@@ -70,7 +70,7 @@ function 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大�
             pos = 实际仓位[n, t]
             pnl += 收益率[n, t]
             date′ = 时间戳[n, min(end, t + 1)] ÷ 86400 * 86400
-            if date > 0 && date′ > 0 && date′ != date || t == T
+            if date > 0 && (date′ > 0 && date′ != date || t == T)
                 code = replace(代码[n, t], r"(?<=[a-zA-Z])\d+" => "")
                 nt = nttype((date, code, pnl, pos, n))
                 push!(nts, nt)
