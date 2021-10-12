@@ -48,7 +48,7 @@ end
 function constraint(时间戳, 代码, 买1价, 卖1价, 涨停, 跌停, 虚拟信号, 记忆仓位, 转移函数, 最多交易次数, 禁止平今, 夜盘最早开仓时间, 夜盘最晚开仓时间, 夜盘最晚平仓时间, 早盘最早开仓时间, 早盘最晚开仓时间, 早盘最晚平仓时间)
     实际仓位 = zero(虚拟信号)
     N, T = size(实际仓位)
-    交易次数 = zeros(Int, N)
+    交易次数 = zeros(Float32, N)
     @inbounds for t in 1:T, n in 1:N
         小时 = to_trade_hour(时间戳[n, t])
         之前仓位 = t > 1 ? 实际仓位[n, t - 1] : 记忆仓位[n]
