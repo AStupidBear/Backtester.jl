@@ -73,7 +73,7 @@ function 输出资金曲线(时间戳, 代码, 实际仓位, 收益率, 最大�
             if date > 0 && (date′ > 0 && date′ != date || t == T)
                 code = replace(代码[n, t], r"(?<=[a-zA-Z])\d+" => "")
                 nt = nttype((date, code, pnl, pos, n))
-                push!(nts, nt)
+                pnl != 0 && push!(nts, nt)
                 dict[date] += 1
                 pnl = 0f0
                 date = date′
