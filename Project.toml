@@ -1,6 +1,6 @@
 name = "Backtester"
 uuid = "e95d6c4f-f375-4488-afb7-83da67c67a69"
-version = "0.1.21"
+version = "0.1.22"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
