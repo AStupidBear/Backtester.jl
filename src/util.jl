@@ -104,13 +104,19 @@ macro redirect(src, ex)
         o, e = stdout, stderr
         redirect_stdout(io)
         redirect_stderr(io)
+        local res
         try
-            $(esc(ex)); sleep(0.01)
+            res = $(esc(ex))
+            sleep(0.01)
+        catch e
+            res = nothing
         finally
-            flush(io); close(io)
+            flush(io)
+            close(io)
             redirect_stdout(o)
             redirect_stderr(e)
         end
+        return res
     end
 end
 
