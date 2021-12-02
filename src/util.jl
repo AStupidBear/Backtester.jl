@@ -108,7 +108,7 @@ macro redirect(src, ex)
         try
             res = $(esc(ex))
             sleep(0.01)
-        catch e
+        catch
             res = nothing
         finally
             flush(io)
