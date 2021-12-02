@@ -116,7 +116,7 @@ macro redirect(src, ex)
             redirect_stdout(o)
             redirect_stderr(e)
         end
-        return res
+        res
     end
 end
 
