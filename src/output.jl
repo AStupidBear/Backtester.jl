@@ -276,7 +276,7 @@ function 合并资金和仓位曲线(csvs)
             c ∉ df.columns && (df[c] = 1)
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
-        df = df.append(df′, ignore_index = true, sort = true)
+        df = pd.concat([df, df′], ignore_index = true, sort = true)
     end
     to_csv(df, "资金和仓位曲线.csv", index = false, encoding = "gbk")
     资金曲线 = Array(df["资金曲线"])
@@ -300,7 +300,7 @@ function 合并资金曲线(csvs)
             c ∉ df.columns && (df[c] = 1)
             df′[c] = 复利 ? df′[c] * df[c].iloc[end] : df′[c] + (df[c].iloc[end] - 1)
         end
-        df = df.append(df′, ignore_index = true, sort = true)
+        df = pd.concat([df, df′], ignore_index = true, sort = true)
     end
     df = df.drop(columns = filter(c -> occursin(r"SZ|HS|ZZ", c), 所有列))
     df = 添加指数(df.groupby("日期").last()).reset_index()
